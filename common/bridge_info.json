@@ -3,7 +3,6 @@
         "ip": "127.0.0.1",
         "port": "8551",
         "key": "0xc544b44c1c58955af516c1f2ff17f8fd522604f1ea6b64db79e067343ed5e307",
-        "key2": "0xc544b44c1c58955af516c1f2ff17f8fd522604f1ea6b64db79e067343ed5e307",
         "operator": "0x7920de6f6d9d1e9fe2e35b48ab8cfce545673888"
     },
     "parent" : {
