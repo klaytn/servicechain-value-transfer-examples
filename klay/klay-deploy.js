@@ -3,7 +3,7 @@ const axios = require('axios');
 const fs = require('fs')
 const util = require('util');
 
-const conf = JSON.parse(fs.readFileSync('../common/deploy_conf.json', 'utf8'));
+const conf = JSON.parse(fs.readFileSync('../common/bridge_info.json', 'utf8'));
 
 const bridgeAbi = JSON.parse(fs.readFileSync('../build/Bridge.abi', 'utf8'));
 const bridgeCode = fs.readFileSync('../build/Bridge.bin', 'utf8');

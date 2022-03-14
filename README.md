@@ -2,7 +2,7 @@
 
 0. You need modified `kscn` binary, which is availalbe at [klaytn-not-merged-yet](https://github.com/hyunsooda/klaytn/commits/SC-support-KIP7-KIP17). If you do not have a plan to test KIP7 and KIP17 for now, then you can use origin `kscn` binary (Just skip this step).
 Still, you can test KIP7 and KIP17 via ```XXX-transfer-2step-XXX.js``` since the KIP standard implementation is compatible with ERC. With this, the emitted events are from ERC contract, not KIP contract. Also, the corresponding transfer handler function is executed thorugh ERC contract, not KIP contract, which means your bridge contract must incorporate ERC standard implementation.
-1. `deploy_conf.json` should be properly set before running tests. See [configuration example](https://ko.docs.klaytn.com/node/service-chain/getting-started/value-transfer)
+1. `bridge_info.json` should be properly set before running tests. See [configuration example](https://ko.docs.klaytn.com/node/service-chain/getting-started/value-transfer)
 2. Set `RPC_API="klay,subbridge"` in your `kscnd.conf`
 
 # Install dependencies
