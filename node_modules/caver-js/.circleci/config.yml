@@ -1,0 +1,219 @@
+version: 2
+
+defaults: &defaults
+  working_directory: ~/repo
+  docker:
+    - image: circleci/node:12.21.0
+
+orbs:
+  cypress: cypress-io/cypress@1.25.0
+
+jobs:
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: 
+          name: "Install caver-js for testing"
+          command: |
+            npm install
+      - run:
+          name: "Lint check"
+          command: npm run lint
+      - run: 
+          name: "Run test code"
+          command: npm test
+      - run: 
+          name: "Run test on Web env"
+          command: |
+            sudo apt update
+            sudo apt-get install libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2 libxtst6 xauth xvfb
+            cd ./test/test-web
+            ./prepareWebTest.sh
+            npm run cypress:run
+            ./terminateTest.sh
+  cypress/run:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: 
+          name: "Run test on Web env"
+          command: |
+            cd ./test/test-web
+            ./prepareWebTest.sh
+            npm run cypress:run
+            ./terminateTest.sh
+
+  tag_verify:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: "verify tag and file verison match"
+          command: |
+            echo "tag version is " $CIRCLE_TAG
+
+            file_version=v$(.circleci/version.sh)
+            echo "file version is " $file_version
+
+            if [ $file_version == ${CIRCLE_TAG%-*} ]; then
+              echo "verification pass"
+            else
+              echo "It's not same version."
+              exit 1
+            fi
+
+  rc_publish:
+    <<: *defaults
+    steps:
+      - add_ssh_keys   
+      - checkout
+      - run:
+          name: "Authenticate with registry"
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/repo/.npmrc
+      - run:
+          name: "Update version in package.json"
+          command: |
+              tag=$CIRCLE_TAG
+              sed -i "s/\"version\": \".*\",/\"version\": \"${tag}\",/" package.json
+      - run:
+          name: "Publish package with rc tag"
+          command: |
+              echo "Publishing a release candidate! version=$CIRCLE_TAG"
+              npm install
+              npm run build
+              npm publish --tag rc
+      - run:
+          name: "Push to release branch"
+          command: |
+              echo "push to release branch: /release/${CIRCLE_TAG%-*}"
+              git checkout -b release/${CIRCLE_TAG%-*}
+              git push origin release/${CIRCLE_TAG%-*}
+      - run:
+          name: "Install hub" 
+          command: |
+              curl -sSLf https://github.com/github/hub/releases/download/v2.12.3/hub-linux-amd64-2.12.3.tgz | \
+                tar zxf - --strip-components=1 -C /tmp && \
+                sudo mv /tmp/bin/hub /usr/local/bin/hub
+              type hub
+      - run:
+          name: "Create pull request" 
+          command: |
+              version=$(hub pr list -s open -L 10 -f "%H%n")
+              echo $version
+              if [[ $version == *"release/${CIRCLE_TAG%-*}"* ]]; then
+                echo "PR already exist"
+              else
+                echo "hub pull-request -m "[Master] release/$CIRCLE_TAG QA Signoff" -b $CIRCLE_PROJECT_USERNAME:master -h $CIRCLE_PROJECT_USERNAME:${CIRCLE_TAG%-*}"
+                echo -e "[Master] release/${CIRCLE_TAG%-*} QA Sign-off\n\nThis PR is automatically created by CI to release a new official version of $CIRCLE_PROJECT_REPONAME.\n\nWhen this PR is approved by QA team, a new version will be released." | hub pull-request -b $CIRCLE_PROJECT_USERNAME:master -h $CIRCLE_PROJECT_USERNAME:release/${CIRCLE_TAG%-*} -r $GITHUB_reviewer -l circleci -F-
+              fi
+
+  tagging_delete_branch:
+    <<: *defaults
+    steps:
+      - add_ssh_keys
+      - checkout
+      - run:
+          name: "Generate tag"
+          command: |
+              current_version=v$(.circleci/version.sh)
+              echo "git tag $current_version"
+              git config --global user.email "team.devops@groundx.xyz"
+              git config --global user.name "circleci-klaytn"
+              git tag -a $current_version -m "$CIRCLE_STAGE"
+              git push origin $current_version
+      - run:
+          name: "Delete release branch"
+          command: |
+              version=v$(.circleci/version.sh)
+              #delete release branch. it trigger by merge title
+              if [[ "release/v" = $(git log --oneline -1 | grep -o "release/v") ]]; then
+                echo "Delete branch release/$version"
+                git push origin --delete release/$version
+              else
+                echo "Need to delete branch manually"
+              fi
+
+  major_publish:
+    <<: *defaults
+    steps:
+      - add_ssh_keys
+      - checkout
+      - run:
+          name: "Authenticate with registry"
+          command: echo "//registry.npmjs.org/:_authToken=$npm_TOKEN" > ~/repo/.npmrc
+      - run:
+          name: "Publish major version"
+          command: |
+              version=v$(.circleci/version.sh)
+
+              echo "Publishing a major release! version=$version"
+              npm install
+              npm run build
+              npm publish
+
+  tagger_verify:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: "Verify tag and file verison match"
+          command: |
+              TAGGER=$(git for-each-ref --format='%(tagger)' refs/tags/$CIRCLE_TAG | sed 's/ .*//')
+              if [ $TAGGER == 'circleci-klaytn' ]; then
+                echo "Pass! Tagger is circleci-klaytn"
+              else
+                echo "only circleci-klaytn can tagging major version"
+                exit 1
+              fi
+
+workflows:
+  version: 2
+  workflow_commit:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore:
+                - /release\/.*/
+                - master
+
+  workflow_publish:
+    jobs:
+      - tag_verify:
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+.*/
+            branches:
+              ignore: /.*/
+
+      - rc_publish:
+          requires:
+            - tag_verify
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+-.*/
+            branches:
+              ignore: /.*/
+
+      - tagging_delete_branch:
+          filters:
+            branches:
+              only: master
+
+      - tagger_verify:
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+/
+            branches:
+              ignore: /.*/
+
+      - major_publish:
+          requires:
+            - tagger_verify
+            - tag_verify
+          filters:
+            tags:
+              only: /^v[0-9]+\.[0-9]+\.[0-9]+/
+            branches:
+              ignore: /.*/

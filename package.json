@@ -1,0 +1,15 @@
+{
+  "name": "node_project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "caver-js": "^1.6.8",
+    "axios": "^0.26.0"
+  }
+}
