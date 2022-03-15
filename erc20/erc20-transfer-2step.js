@@ -20,7 +20,7 @@ function sleep(ms) {
   const enInstance = new enCaver.klay.Contract(tokenAbi, conf.parent.token);
   const enInstanceBridge = new enCaver.klay.Contract(bridgeAbi, conf.parent.bridge);
 
-  conf.child.sender = scnCaver.klay.accounts.wallet.add(conf.child.key).addres;
+  conf.child.sender = scnCaver.klay.accounts.wallet.add(conf.child.key).address;
   conf.parent.sender = enCaver.klay.accounts.wallet.add(conf.parent.key).address;
   const alice = "0xc40b6909eb7085590e1c26cb3becc25368e249e9";
 
