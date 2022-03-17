@@ -1,73 +1,62 @@
-# Repo template
+# Requirement
+1. `bridge_info.json` should be properly set before running tests. See [configuration example](https://docs.klaytn.com/node/service-chain/getting-started/value-transfer)
+2. Set `RPC_API="klay,subbridge"` in your `kscnd.conf`
 
-Template repository to help setup new projects in ground-x.
+# Install dependencies
+`$ npm install`
 
-## Checklist
+# How to run
+All the script files, ```*.sh``` sequantilly run contract deployment, one-step (`requestValueTransfer()`), and two-step (`approve()` and `requestXXXTransfer()`) transfers.
+The `kscn` binary, ofifcially provided by Klaytn Team is currently not aware of one-step transfer handling from KIP7 and KIP17 token trasnfer reqeust and they are intentionally omitted.
+Also, current NFT transfer example has a minor bug of URI loss, which means the URI value is always retrieved as empty after token trasnfer. This problem would be fixed in v1.18.1
+### ERC-20
+```
+cd erc20
+./erc20-deploy-and-test-transfer.sh
+```
 
-- [ ] PR 리뷰어로 등록될 프로젝트 담당 개발자 지정 `.github/CODEOWNERS`
-- [ ] 테스트 구성 (unit, lint, coverage, integration, e2e, sanity)
-- [ ] (Optional) example-Dockerfile 참고하여 Dockerfile 작성
-- [ ] branch policy 설정(Dev, Master) 확인
-- [ ] CI/CD Pipeline 설정
-- [ ] example-REAME.md 참고하여 README 작성 
+### ERC-721
+```
+cd erc721
+./erc721-deploy-and-test-transfer.sh
+```
 
-# Category
+### KIP-7
+```
+cd kip7
+./kip7-deploy-and-test-transfer.sh
+```
 
-## GX 공통 개발 프로세스
-- 프로젝트 레포의 fork를 떠서 개발을 한다.
-- 개인의 repo에서 ground-x/project dev(dev가 없을 경우 master) branch로 PR을 올려 코드 리뷰를 한다.
-- 2명 이상의 approve 후에 머지를 한다.
+### KIP-17
+```
+cd kip17
+./kip17-deploy-and-test-transfer.sh
+```
 
-참고: [Standard CI/CD pipeline](https://groundx.atlassian.net/wiki/spaces/PG/pages/324305133/Standard+CI+CD+Pipeline)
+### KLAY
+You must check if the sender that calls the transfer request has enough balance first.
+```
+cd klay
+./klay-deploy-and-test-transfer.sh
+```
 
-## CI/CD pipeline
-CI/CD pipeline은 환경이 얼마나 필요하냐에 따라 크게 두가지로 분류.
+### All
+```
+./run_all.sh
+```
 
-### One branch
-master 브랜치 하나를 가지고 태깅으로 production에 배포. 주로 개발 공수가 많이 안들어가는 static site의 경우가 이에 해당.
+### Reference
+- [Getting Started](https://ko.docs.klaytn.com/node/service-chain/getting-started)
+- [Value Transfer Reference](https://ko.docs.klaytn.com/node/service-chain/references/value-transfer)
 
-환경
-- Prod
-- (optional) dev
+## How the KIP token can be transferred using ERC-dedicated bridge contract function and vice versa?
+The function `requestValueTransfer()` from both KIP7 and KIP17 contracts are currently not supported. However, both KIP7 and KIP17 are compatiable with ERC20 and ERC721, respectively,
+which means the token transfer would be possible through compatible interface contract. Our current bridge contract has built-in token transfer functions between chains.
+Currently, `requestERC20Trasnfer()` and `requestERC721Transfer()` are supported and they are exploited to transfer the KIP7 and KIP17 standard token.
+The functions consist of two steps: (1) Trasnfer the token first and (2) emit `RequestValueTransfer` event, which handled by the counterpart chain.
+The standard implementation of token trasnfer is the same between KIP and ERC. Of course, modification can be made in those implementation by specific purpose, but the principal is not changed unless the developer have does satisfied the standard implementation.
+Thus, token trasnfer would be done successfully. Second, the logic right after trasnfer the token contains burning the token, returning fee, and emit the corresponding event. They are currently not the modifiable context from third-party users.
+Thus, the behavior is fixed. This is the techinical background how the KIP token can be transferred via ERC-dedicated bridge contract transfer function and vice versa.
 
-배포
-- dev: master branch PR merge(코드 리뷰)
-- prod: master branch에서 `/env/prod/{{ prefix }}` 태그가 push 될때 마다 
-Example
-- klaytn-homepage, groundx-homepage, kaikas-mobile-homepage.. etc.
-
-### Multi branch
-dev, master 브랜치를 여러개 사용해서 여러 환경에 배포. QA환경(rc)이 추가되고 performance, staging 환경이 추가될 수 있음. 주로 개발 공수가 꽤 들어가는 major project일 경우 이에 해당.
-
-환경
-- dev, QA, Prod
-- (optional) performance, staging
-
-배포
-- dev: dev branch PR merge(코드 리뷰)
-- QA: rc tagging ex, `v1.1.0-rc.1`
-- staging: master branch PR merge(QA Sign-off) -- performance 환경이 추가될 수 있음.
-- prod: approve by circleci console(alert to slack channel #tech_release)
-Example
-- go-klip-backend, klip-front, kas-auth, kaikas-pixeplex, klaytn, caver-js, caver-java, wallet-api.. etc. 
-
-### Hotfix
-hotfix가 필요할땐 [hotfix process](https://groundx.atlassian.net/wiki/spaces/PG/pages/770998428/Standard+CI+CD+Pipeline+-+Hotfix+Differences) 대로 진행.
-
-master branch에서 `hotfix/v1.1.0`라는 브랜치 생성. 해당 브랜치로 PR 생성하여 코드리뷰 진행
-- live product인 경우: hotfix 브랜치 PR 머지시 QA에 배포
-- klaytn 같은 binary인 경우: PR 머지하여 hotfix 브랜치에서 rc 생성시 rc 버전 배포
-
-## Tests
-- Unit test
-- Integration test
-- Sanity Check
-
-More deails: [Project Test Types](https://groundx.atlassian.net/wiki/spaces/PG/pages/795836631/Project+Test+Types+Draft)
-
-## Docker image
-CI나 로컬 환경을 위해 도커 이미지가 필요하다면 가이드라인을 참고. [Recommended Docker Base Images](https://groundx.atlassian.net/wiki/spaces/PG/pages/809697425/Recommended+Docker+Base+Images).
-기본적으로 build 하기 위한 이미지, run 하는 이미지를 분리하여 작성(예, [example-Dockerfile](https://github.com/ground-x/repo-template/blob/master/example-Dockerfile))
-
-### Pre-Built CircleCI Docker Images
-https://circleci.com/docs/2.0/circleci-images/#latest-image-tags-by-language
+## TODO
+Both KIP7 and KIP17 bridge contracts would be supported corresponding `kscn` binary soon. If you want to experience it early, go to [klaytn-not-merged-yet](https://github.com/hyunsooda/klaytn/commits/SC-support-KIP7-KIP17) and compile it in your local environment.

@@ -1,0 +1,2 @@
+//await scnInstanceBridge.methods.requestKLAYTransfer(alice, amount, []).send({from: conf.scn.sender,gas: 100000000, value: amount })
+//await enInstanceBridge.methods.requestKLAYTransfer(conf.scn.sender, amount, []).send({from: conf.en.sender,gas: 100000000, value: amount })

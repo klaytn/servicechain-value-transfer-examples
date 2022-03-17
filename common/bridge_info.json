@@ -1,0 +1,12 @@
+{
+    "child" : {
+        "url": "http://127.0.0.1:8551",
+        "key": "0xc544b44c1c58955af516c1f2ff17f8fd522604f1ea6b64db79e067343ed5e307",
+        "operator": "0x7920de6f6d9d1e9fe2e35b48ab8cfce545673888"
+    },
+    "parent" : {
+        "url": "http://127.0.0.1:9781",
+        "key": "0x4b07ca7412ad2bb0e62db30369b9f08a8724fb81fce4b3b1af23800233074fbf",
+        "operator": "0xa36a4d6d15fa692eceaa616008bc2decc5c0403b"
+    }
+}
