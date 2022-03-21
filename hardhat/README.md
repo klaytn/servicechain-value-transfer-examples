@@ -4,9 +4,11 @@ This project ports service chain token test/deploy to hardhat.
 
 ## Testing on Hardhat network
 Run `npx hardhat run scripts/deploy.js`.
+Note that it deploys both bridge contracts and service chain tokens on the same network, so it only gives you an idea how the whole procedure works.
 
 ## Testing on Klaytn test network
 ### Prerequisites
+- Include `eth` to `RPC_API` in `kend.conf` and `kscnd.conf`. The feature requires klaytn >= v1.8.0.
 - Customize `url`, `chainId`, `operator` in `hardhat.config.js` as follows:
 
 ```
