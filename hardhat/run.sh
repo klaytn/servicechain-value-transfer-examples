@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 echo "[+] Deploying contract to mainbridge"
 npx hardhat deploy --network mainbridge
