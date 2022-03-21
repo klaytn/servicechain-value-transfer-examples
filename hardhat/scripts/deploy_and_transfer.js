@@ -53,14 +53,19 @@ async function main() {
   console.log(`subbridge.registerToken("${scbridge.address}", "${enbridge.address}", "${sctoken.address}", "${entoken.address}")`)
 
   const alice = '0xc40b6909eb7085590e1c26cb3becc25368e249e9';
+  bal = await entoken.balanceOf(enbridge.address);
+  console.log("ENbridge balance before requestValueTransfer:", bal.toNumber());
 
   // request to the token contract
   await entoken.requestValueTransfer(100, alice, 0, []);
+  bal = await entoken.balanceOf(enbridge.address);
+  console.log("ENbridge balance after requestValueTransfer:", bal.toNumber());
 
   // direct request to the bridge
   await entoken.approve(enbridge.address, 100);
   await enbridge.requestERC20Transfer(entoken.address, alice, 100, 0, []);
-  console.log(await entoken.balanceOf(enbridge.address));
+  bal = await entoken.balanceOf(enbridge.address);
+  console.log("ENbridge balance after requestERC20Transfer (due to simulation):", bal.toNumber());
 }
 
 // We recommend this pattern to be able to use async/await everywhere
