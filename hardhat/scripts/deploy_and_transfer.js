@@ -27,7 +27,7 @@ async function main() {
   await entoken.deployed(enbridge.address);
 
   const SCtoken = await hre.ethers.getContractFactory("ServiceChainToken");
-  const sctoken = await SCtoken.deploy(enbridge.address);
+  const sctoken = await SCtoken.deploy(scbridge.address);
   await sctoken.deployed(scbridge.address);
 
   await entoken.addMinter(enbridge.address);
