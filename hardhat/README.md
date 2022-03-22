@@ -28,7 +28,7 @@ subbridge: {
 },
 ```
 
-You may have to adjust `gasPrice` if gas price changes.
+You should adjust `gasPrice` with the current `gasPrice` value from your network. The default `gasPrice` in the template is set with the value from the Cypress network (i.e., 25 ston).
 
 - Run `subbridge.anchroing(true)` in kscn
 
