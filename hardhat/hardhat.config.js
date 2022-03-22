@@ -122,7 +122,7 @@ module.exports = {
       url: "http://127.0.0.1:8554",
       chainId: 1000,
       gas: 50000000,
-      gasPrice: 0,
+      gasPrice: 25000000000,
       accounts: {
         mnemonic: "test test test test test test test test test test test junk",
         initialIndex: 0,
@@ -133,7 +133,7 @@ module.exports = {
       url: "http://127.0.0.1:8555",
       chainId: 1001,
       gas: 50000000,
-      gasPrice: 0,
+      gasPrice: 25000000000,
       accounts: {
         mnemonic: "test test test test test test test test test test test junk",
         initialIndex: 0,
