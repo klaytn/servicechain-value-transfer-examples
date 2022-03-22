@@ -65,7 +65,7 @@ async function main() {
   await entoken.approve(enbridge.address, 100);
   await enbridge.requestERC20Transfer(entoken.address, alice, 100, 0, []);
   bal = await entoken.balanceOf(enbridge.address);
-  console.log("ENbridge balance after requestERC20Transfer (due to simulation):", bal.toNumber());
+  console.log("ENbridge balance after requestERC20Transfer:", bal.toNumber());
 }
 
 // We recommend this pattern to be able to use async/await everywhere
