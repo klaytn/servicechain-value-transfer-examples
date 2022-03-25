@@ -11,15 +11,23 @@ const nftAbi = JSON.parse(fs.readFileSync('../build/ServiceChainNFT.abi', 'utf8'
 const nftCode = fs.readFileSync('../build/ServiceChainNFT.bin', 'utf8');
 
 async function jsonRpcReq(url, log, method, params) {
-    if (typeof jsonRpcReq.id == 'undefined') jsonRpcReq.id = 0;
+  if (typeof jsonRpcReq.id == undefined) jsonRpcReq.id = 0;
 
-    console.log(log)
-    await axios.post(url, {
-        "jsonrpc":"2.0","method":method,"params":params,"id": jsonRpcReq.id++
-    }).then(res => {
-    }).catch(err => {
-      console.log(res.data.error)
-    })
+  console.log(log)
+  await axios.post(url, {
+      "jsonrpc":"2.0","method":method,"params":params,"id": jsonRpcReq.id++
+  }).then(res => {
+    if (res.data.error != undefined) {
+      console.log(res.data.error);
+      process.exit(res.data.code);
+    }
+  }).catch(err => {
+    if (err != undefined) {
+      console.log("HERE22")
+      console.log(err);
+      process.exit(1);
+    }
+  });
 }
 
 async function deploy(info) {
