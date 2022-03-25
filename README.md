@@ -60,3 +60,7 @@ Thus, the behavior is fixed. This is the techinical background how the KIP token
 
 ## TODO
 Both KIP7 and KIP17 bridge contracts would be supported corresponding `kscn` binary soon. If you want to experience it early, go to [klaytn-not-merged-yet](https://github.com/hyunsooda/klaytn/commits/SC-support-KIP7-KIP17) and compile it in your local environment.
+
+## Bridge Alias API
+The current SC implementation does not have built-in bridge management for convinent bridge access.
+Bridge alias is a new feature to be developed that allows to access specific bridge pair via alias access. The PoC example of alias API is in `erc20/alias-erc20-deploy.js`.
