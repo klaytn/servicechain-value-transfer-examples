@@ -1,14 +1,21 @@
 # Klaytn ServiceChain Token Bridge with Hardhat
 
-This project ports service chain token test/deploy to hardhat.
+This project ports ServiceChain token test/deploy to hardhat.
 
 ## Testing on Hardhat network
-Run `npx hardhat run scripts/deploy.js`.
-Note that it deploys both bridge contracts and service chain tokens on the same network, so it only gives you an idea how the whole procedure works.
+Run the commands:
+
+```
+npm install
+npx hardhat run scripts/deploy_and_transfer.js
+```
+
+Note that it deploys both bridge contracts and ServiceChain tokens on the same network, so it only gives you an idea how the whole procedure works.
 
 ## Testing on Klaytn test network
 ### Prerequisites
-- Include `eth` to `RPC_API` in `kend.conf` and `kscnd.conf`. The feature requires klaytn >= v1.8.0.
+- Run `npm install`
+- Include `eth` to `RPC_API` in `kend.conf` and `kscnd.conf`. The feature requires klaytn >= v1.8.0. Also, Klaytn should be restarted after you modify the configuration files.
 - Customize `url`, `chainId`, `operator` in `hardhat.config.js` as follows:
 
 ```
@@ -32,7 +39,7 @@ You should adjust `gasPrice` with the current `gasPrice` value from your network
 
 - Run `subbridge.anchroing(true)` in kscn
 
-- The following address must have some Klay. Use faucet. Otherwise, you can change the `accounts` field with a preffered one.
+- The following address must have some Klay. Use faucet. Otherwise, you can change the `accounts` field with a preferred one.
 
 ```
 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
