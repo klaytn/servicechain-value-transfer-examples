@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+npx hardhat compile
+
 echo "[+] Deploying contract to mainbridge"
 npx hardhat deploy --network mainbridge
 
