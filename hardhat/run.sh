@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+echo '' > state.conf
 npx hardhat compile
 
 echo "[+] Deploying contract to mainbridge"
@@ -13,12 +14,7 @@ echo "[+] Registering token to mainbridge"
 npx hardhat regtoken --network mainbridge
 
 echo "[+] Registering token to subbridge"
-echo "===================================================================================================="
 npx hardhat regtoken --network subbridge
-
-echo "===================================================================================================="
-echo "Continue?"
-read line
 
 echo "[+] Transferring mainbridge -> subbridge"
 npx hardhat transfer --network mainbridge

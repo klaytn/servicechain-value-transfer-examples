@@ -1,6 +1,8 @@
 require("@nomiclabs/hardhat-waffle");
 const fs = require('fs');
 
+const alice = '0xc40b6909eb7085590e1c26cb3becc25368e249e9';
+
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
@@ -75,10 +77,18 @@ task("regtoken", "Register operator and token to bridge", async (taskArgs, hre) 
   await bridge.transferOwnership(hre.network.config.operator);
 
   if (hre.network.name == 'subbridge') {
-    console.log(">>> Run the following commands in kscn:")
-    console.log(`subbridge.registerBridge("${conf.subbridge.bridge}", "${conf.mainbridge.bridge}")`)
-    console.log(`subbridge.subscribeBridge("${conf.subbridge.bridge}", "${conf.mainbridge.bridge}")`)
-    console.log(`subbridge.registerToken("${conf.subbridge.bridge}", "${conf.mainbridge.bridge}", "${conf.subbridge.token}", "${conf.mainbridge.token}")`)
+    await hre.network.provider.request({
+      method: "subbridge_registerBridge",
+      params: [conf.subbridge.bridge, conf.mainbridge.bridge]
+    });
+    await hre.network.provider.request({
+      method: "subbridge_subscribeBridge",
+      params: [conf.subbridge.bridge, conf.mainbridge.bridge]
+    });
+    await hre.network.provider.request({
+      method: "subbridge_registerToken",
+      params: [conf.subbridge.bridge, conf.mainbridge.bridge, conf.subbridge.token, conf.mainbridge.token]
+    });
   }
 });
 
@@ -87,8 +97,7 @@ task("transfer", "Cross value transfer from mainbridge to subbridge", async (tas
   const c = conf[hre.network.name];
   const Token = await hre.ethers.getContractFactory("ServiceChainToken");
   const token = await Token.attach(c.token);
-  const signers = await hre.ethers.getSigners();
-  await token.requestValueTransfer(100, signers[1].address, 0, []);
+  await token.requestValueTransfer(100, alice, 0, []);
 });
 
 task("bal", "Check the balance", async (taskArgs, hre) => {
@@ -96,9 +105,8 @@ task("bal", "Check the balance", async (taskArgs, hre) => {
   const c = conf[hre.network.name];
   const Token = await hre.ethers.getContractFactory("ServiceChainToken");
   const token = await Token.attach(c.token);
-  const signers = await hre.ethers.getSigners();
-  const bal = await token.balanceOf(signers[1].address)
-  console.log(`Balance of ${signers[1].address} : ${bal.toNumber()}`);
+  const bal = await token.balanceOf(alice);
+  console.log(`Balance of ${alice} : ${bal.toNumber()}`);
 });
 
 // You need to export an object to set up your config
@@ -136,7 +144,7 @@ module.exports = {
       gasPrice: 25000000000,
       accounts: {
         mnemonic: "test test test test test test test test test test test junk",
-        initialIndex: 0,
+        initialIndex: 1,
       },
       operator: '0xcb5e2874276d3a96ab6331cafeb80baa6453eeb0',
     },
