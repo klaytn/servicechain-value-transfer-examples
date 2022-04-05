@@ -15,7 +15,7 @@ Note that it deploys both bridge contracts and ServiceChain tokens on the same n
 ## Testing on Klaytn test network
 ### Prerequisites
 - Run `npm install`
-- Include `eth` to `RPC_API` in `kend.conf` and `kscnd.conf`. The feature requires klaytn >= v1.8.0. Also, Klaytn should be restarted after you modify the configuration files.
+- Include `eth` to `RPC_API` in `kend.conf` and `eth,subbridge` to `RPC_API` in `kscnd.conf`. The feature requires klaytn >= v1.8.0. Also, Klaytn should be restarted after you modify the configuration files.
 - Customize `url`, `chainId`, `operator` in `hardhat.config.js` as follows:
 
 ```
