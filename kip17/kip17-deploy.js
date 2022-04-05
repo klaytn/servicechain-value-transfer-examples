@@ -7,8 +7,8 @@ const conf = JSON.parse(fs.readFileSync('../common/bridge_info.json', 'utf8'));
 
 const bridgeAbi = JSON.parse(fs.readFileSync('../build/Bridge.abi', 'utf8'));
 const bridgeCode = fs.readFileSync('../build/Bridge.bin', 'utf8');
-const nftAbi = JSON.parse(fs.readFileSync('../build/ServiceChainTokenKIP17.abi', 'utf8'));
-const nftCode = fs.readFileSync('../build/ServiceChainTokenKIP17.bin', 'utf8');
+const nftAbi = JSON.parse(fs.readFileSync('../build/ServiceChainKIP17NFT.abi', 'utf8'));
+const nftCode = fs.readFileSync('../build/ServiceChainKIP17NFT.bin', 'utf8');
 
 async function jsonRpcReq(url, log, method, params) {
   if (typeof jsonRpcReq.id == undefined) jsonRpcReq.id = 0;
@@ -23,7 +23,6 @@ async function jsonRpcReq(url, log, method, params) {
     }
   }).catch(err => {
     if (err != undefined) {
-      console.log("HERE22")
       console.log(err);
       process.exit(1);
     }

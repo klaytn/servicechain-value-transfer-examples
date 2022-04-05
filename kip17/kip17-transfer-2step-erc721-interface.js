@@ -4,7 +4,7 @@ const fs = require('fs');
 
 const conf = JSON.parse(fs.readFileSync('transfer_conf.json', 'utf8'));
 const bridgeAbi = JSON.parse(fs.readFileSync('../build/Bridge.abi', 'utf8'));
-const nftAbi = JSON.parse(fs.readFileSync('../build/ServiceChainTokenKIP17.abi', 'utf8'));
+const nftAbi = JSON.parse(fs.readFileSync('../build/ServiceChainKIP17NFT.abi', 'utf8'));
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));

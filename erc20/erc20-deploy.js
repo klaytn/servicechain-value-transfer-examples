@@ -23,7 +23,6 @@ async function jsonRpcReq(url, log, method, params) {
     }
   }).catch(err => {
     if (err != undefined) {
-      console.log("HERE22")
       console.log(err);
       process.exit(1);
     }
