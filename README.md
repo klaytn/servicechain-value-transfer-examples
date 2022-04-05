@@ -60,6 +60,7 @@ Thus, the behavior is fixed. This is the techinical background how the KIP token
 
 ## TODO
 Both KIP7 and KIP17 bridge contracts would be supported corresponding `kscn` binary soon. If you want to experience it early, go to [klaytn-not-merged-yet](https://github.com/hyunsooda/klaytn/commits/SC-support-KIP7-KIP17) and compile it in your local environment.
+`native-kip7` and `native-kip17` directories contain value trasnfer examples based on KIP-7 and KIP-17 contracts.
 
 ## Bridge Alias API
 The current SC implementation does not have built-in bridge management for convinent bridge access.
