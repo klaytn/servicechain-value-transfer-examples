@@ -30,7 +30,7 @@ async function jsonRpcReq(url, log, method, params) {
 }
 
 async function deploy(info) {
-  const caver = new Caver(info.url);
+  const caver = new Caver(info.urls[0]);
   info.sender = caver.klay.accounts.wallet.add(info.key).address;
 
   try {
@@ -60,19 +60,27 @@ async function deploy(info) {
 
   // add minter
   await conf.child.newInstance.methods.addMinter(conf.child.bridge).send({ from: conf.child.sender, to: conf.child.bridge, gas: 100000000, value: 0 });
-  await conf.parent.newInstance.methods.addMinter(conf.parent.bridge).send({ from: conf.parent.sender, to: conf.child.bridge, gas: 100000000, value: 0 });
+  await conf.parent.newInstance.methods.addMinter(conf.parent.bridge).send({ from: conf.parent.sender, to: conf.parent.bridge, gas: 100000000, value: 0 });
 
   // register operator
-  await conf.child.newInstanceBridge.methods.registerOperator(conf.child.operator).send({ from: conf.child.sender, gas: 100000000, value: 0 });
-  await conf.parent.newInstanceBridge.methods.registerOperator(conf.parent.operator).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
+  for (const operator of conf.child.operators) {
+    await conf.child.newInstanceBridge.methods.registerOperator(operator).send({ from: conf.child.sender, gas: 100000000, value: 0 });
+  }
+  for (const operator of conf.parent.operators) {
+    await conf.parent.newInstanceBridge.methods.registerOperator(operator).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
+  }
 
   // register token
   await conf.child.newInstanceBridge.methods.registerToken(conf.child.token, conf.parent.token).send({ from: conf.child.sender, gas: 100000000, value: 0 });
   await conf.parent.newInstanceBridge.methods.registerToken(conf.parent.token, conf.child.token).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
 
+  // setOperatorThreshold
+  await conf.child.newInstanceBridge.methods.setOperatorThreshold(0, conf.child.operators.length).send({ from: conf.child.sender, gas: 100000000, value: 0 });
+  await conf.parent.newInstanceBridge.methods.setOperatorThreshold(0, conf.parent.operators.length).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
+
   // transferOwnership
-  await conf.child.newInstanceBridge.methods.transferOwnership(conf.child.operator).send({ from: conf.child.sender, gas: 100000000, value: 0 });
-  await conf.parent.newInstanceBridge.methods.transferOwnership(conf.parent.operator).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
+  await conf.child.newInstanceBridge.methods.transferOwnership(conf.child.operators[0]).send({ from: conf.child.sender, gas: 100000000, value: 0 });
+  await conf.parent.newInstanceBridge.methods.transferOwnership(conf.parent.operators[0]).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
 
   const filename  = "transfer_conf.json"
   fs.writeFile(filename, JSON.stringify(conf), (err) => {
@@ -81,21 +89,16 @@ async function deploy(info) {
       }
   });
 
-  const url = conf.child.url;
-  log = 'registering bridges to the child node';
-  await jsonRpcReq(url, log, 'subbridge_registerBridge', [conf.child.bridge, conf.parent.bridge]);
+  for (const url of conf.child.urls) {
+    log = 'registering bridges to the child node';
+    await jsonRpcReq(url, log, 'subbridge_registerBridge', [conf.child.bridge, conf.parent.bridge]);
 
-  log = 'subscribing bridges to the child node';
-  await jsonRpcReq(url, log, 'subbridge_subscribeBridge', [conf.child.bridge, conf.parent.bridge]);
+    log = 'subscribing bridges to the child node';
+    await jsonRpcReq(url, log, 'subbridge_subscribeBridge', [conf.child.bridge, conf.parent.bridge]);
 
-  log = 'register token to subbridge..';
-  await jsonRpcReq(url, log, 'subbridge_registerToken', [conf.child.bridge, conf.parent.bridge, conf.child.token, conf.parent.token]);
+    log = 'register token to subbridge..';
+    await jsonRpcReq(url, log, 'subbridge_registerToken', [conf.child.bridge, conf.parent.bridge, conf.child.token, conf.parent.token]);
+  }
 
-  /*
-   * Initialize service chain configuration with three logs via interaction with attached console
-  console.log(`subbridge.registerBridge("${conf.child.bridge}", "${conf.parent.bridge}")`)
-  console.log(`subbridge.subscribeBridge("${conf.child.bridge}", "${conf.parent.bridge}")`)
-  console.log(`subbridge.registerToken("${conf.child.bridge}", "${conf.parent.bridge}", "${conf.child.token}", "${conf.parent.token}")`)
-  */
   console.log(`------------------------- ${testcase} END -------------------------`)
 })();

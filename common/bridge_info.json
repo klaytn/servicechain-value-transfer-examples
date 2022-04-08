@@ -1,12 +1,20 @@
 {
     "child" : {
-        "url": "http://127.0.0.1:8551",
+        "urls": [
+            "http://127.0.0.1:8551"
+        ],
         "key": "0xc544b44c1c58955af516c1f2ff17f8fd522604f1ea6b64db79e067343ed5e307",
-        "operator": "0x37ca5a315d5e17e428bb5edff2b6f2e6211bbe39"
+        "operators": [
+            "0x37ca5a315d5e17e428bb5edff2b6f2e6211bbe39"
+        ]
     },
     "parent" : {
-        "url": "http://127.0.0.1:9781",
+        "urls": [
+            "http://127.0.0.1:9781"
+        ],
         "key": "0x4b07ca7412ad2bb0e62db30369b9f08a8724fb81fce4b3b1af23800233074fbf",
-        "operator": "0xd5c0321bafc1d82ccd5cb60c0d943328c9d93318"
+        "operators": [
+            "0xd5c0321bafc1d82ccd5cb60c0d943328c9d93318"
+        ]
     }
 }

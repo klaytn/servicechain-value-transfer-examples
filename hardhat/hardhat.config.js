@@ -49,7 +49,7 @@ task("deploy", "Deploy bridge and token contracts to both EN and SCN", async (ta
 
   await token.addMinter(bridge.address);
 
-  await bridge.registerOperator(hre.network.config.operator);
+  await bridge.registerOperator(hre.network.config.operators[0]);
 
   if (hre.network.name == 'mainbridge') {
     conf.mainbridge.bridge = bridge.address;
@@ -74,7 +74,7 @@ task("regtoken", "Register operator and token to bridge", async (taskArgs, hre) 
   else {
     await bridge.registerToken(c.token, conf.mainbridge.token);
   }
-  await bridge.transferOwnership(hre.network.config.operator);
+  await bridge.transferOwnership(hre.network.config.operators[0]);
 
   if (hre.network.name == 'subbridge') {
     await hre.network.provider.request({
@@ -127,7 +127,7 @@ module.exports = {
   },
   networks: {
     mainbridge: {
-      url: "http://127.0.0.1:8554",
+      urls: ["http://127.0.0.1:8554"],
       chainId: 1000,
       gas: 50000000,
       gasPrice: 25000000000,
@@ -135,10 +135,10 @@ module.exports = {
         mnemonic: "test test test test test test test test test test test junk",
         initialIndex: 0,
       },
-      operator: '0x9388349e71140c1f099ca8293892ab0d1e151d4f',
+      operators: ['0x9388349e71140c1f099ca8293892ab0d1e151d4f'],
     },
     subbridge: {
-      url: "http://127.0.0.1:8555",
+      urls: ["http://127.0.0.1:8555"],
       chainId: 1001,
       gas: 50000000,
       gasPrice: 25000000000,
@@ -146,7 +146,7 @@ module.exports = {
         mnemonic: "test test test test test test test test test test test junk",
         initialIndex: 1,
       },
-      operator: '0xcb5e2874276d3a96ab6331cafeb80baa6453eeb0',
+      operators: ['0xcb5e2874276d3a96ab6331cafeb80baa6453eeb0'],
     },
     hardhat: {
       accounts: {

@@ -20,18 +20,18 @@ Note that it deploys both bridge contracts and ServiceChain tokens on the same n
 
 ```
 mainbridge: {
-  url: "http://127.0.0.1:8554",
+  urls: ["http://127.0.0.1:8554"],
   chainId: 1000,
   gasPrice: 25000000000,
       ...
-  operator: '0x9388349e71140c1f099ca8293892ab0d1e151d4f',
+  operators: ['0x9388349e71140c1f099ca8293892ab0d1e151d4f'],
 },
 subbridge: {
-  url: "http://127.0.0.1:8555",
+  urls: ["http://127.0.0.1:8555"],
   chainId: 1001,
   gasPrice: 25000000000,
       ...
-  operator: '0xcb5e2874276d3a96ab6331cafeb80baa6453eeb0',
+  operators: ['0xcb5e2874276d3a96ab6331cafeb80baa6453eeb0'],
 },
 ```
 

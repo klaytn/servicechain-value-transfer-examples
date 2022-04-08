@@ -12,11 +12,11 @@ function sleep(ms) {
 (async function TokenTransfer() {
   const testcase = process.argv[1].substring(process.argv[1].lastIndexOf('/') + 1).replace(/\.[^/.]+$/, "");
   console.log(`------------------------- ${testcase} START -------------------------`)
-  const scnCaver = new Caver(conf.child.url);
+  const scnCaver = new Caver(conf.child.urls[0]);
   const scnInstanceBridge = new scnCaver.klay.Contract(bridgeAbi, conf.child.bridge);
   conf.child.sender = scnCaver.klay.accounts.wallet.add(conf.child.key).address;
 
-  const enCaver = new Caver(conf.parent.url);
+  const enCaver = new Caver(conf.parent.urls[0]);
   const enInstanceBridge = new enCaver.klay.Contract(bridgeAbi, conf.parent.bridge);
   conf.parent.sender = enCaver.klay.accounts.wallet.add(conf.parent.key).address;
 
@@ -29,7 +29,7 @@ function sleep(ms) {
 
     const senderBalance = await enCaver.utils.convertFromPeb(await enCaver.rpc.klay.getBalance(conf.parent.sender));
     assert(senderBalance >= initialAmount);
-    
+
     // Send KLAY from the sender on parent chain to bridge contract on the parent chain
     await enInstanceBridge.methods.chargeWithoutEvent().send({from: conf.parent.sender, gas: 100000000, value: initialAmount});
 
