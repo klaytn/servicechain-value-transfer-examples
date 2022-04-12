@@ -28,9 +28,9 @@ async function jsonRpcReq(url, log, method, params) {
   });
 }
 
-async function deploy(info, bridgeIdentity) {
-  const caver = new Caver(info.url);
-  info.sender = caver.klay.accounts.wallet.add(info.key).address;
+async function deploy(url, sender, info, bridgeIdentity) {
+  const caver = new Caver(url);
+  sender.address = caver.klay.accounts.wallet.add(sender.key).address;
 
   try {
     // Send intial 1000 KLAY to ServiceChain bridge contract, not parent bridge contract
@@ -39,15 +39,15 @@ async function deploy(info, bridgeIdentity) {
     let amount = 0;
     if (bridgeIdentity == "child") {
       amount = caver.utils.toPeb(1000, 'KLAY');
-      const senderBalance = await caver.utils.convertFromPeb(await caver.rpc.klay.getBalance(info.sender));
+      const senderBalance = await caver.utils.convertFromPeb(await caver.rpc.klay.getBalance(sender.address));
       assert(senderBalance >= amount);
-      console.log("sender blaance:", senderBalance);
+      console.log("sender balance:", senderBalance);
     }
 
     // Deploy bridge
     const instanceBridge = new caver.klay.Contract(bridgeAbi);
     info.newInstanceBridge = await instanceBridge.deploy({data: bridgeCode, arguments:[true]})
-        .send({ from: info.sender, gas: 100000000, value: amount });
+        .send({ from: sender.address, gas: 100000000, value: amount });
     info.bridge = info.newInstanceBridge._address;
     const bridgeBalance = await caver.utils.convertFromPeb(await caver.rpc.klay.getBalance(info.bridge));
     if (bridgeIdentity == "child")
@@ -61,16 +61,30 @@ async function deploy(info, bridgeIdentity) {
 (async function TokenDeploy() {
   const testcase = process.argv[1].substring(process.argv[1].lastIndexOf('/') + 1).replace(/\.[^/.]+$/, "");
   console.log(`------------------------- ${testcase} START -------------------------`)
-  await deploy(conf.child, 'child');
-  await deploy(conf.parent, 'parent');
+  conf.contract = {child: {}, parent:{}}
+  await deploy(conf.bridges[0].child.url, conf.sender.child, conf.contract.child, 'child');
+  await deploy(conf.bridges[0].parent.url, conf.sender.parent, conf.contract.parent, 'parent');
 
-  // register operator
-  await conf.child.newInstanceBridge.methods.registerOperator(conf.child.operator).send({ from: conf.child.sender, gas: 100000000, value: 0 });
-  await conf.parent.newInstanceBridge.methods.registerOperator(conf.parent.operator).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
+  for (const bridge of conf.bridges) {
+    // register operator
+    await conf.contract.child.newInstanceBridge.methods.registerOperator(bridge.child.operator).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
+    await conf.contract.parent.newInstanceBridge.methods.registerOperator(bridge.parent.operator).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
+
+    const url = bridge.child.url;
+    log = 'registering bridges to the child node'
+    await jsonRpcReq(url, log, 'subbridge_registerBridge', [conf.contract.child.bridge, conf.contract.parent.bridge]);
+
+    log = 'subscribing bridges to the child node'
+    await jsonRpcReq(url, log, 'subbridge_subscribeBridge', [conf.contract.child.bridge, conf.contract.parent.bridge]);
+  }
+
+  // setOperatorThreshold
+  await conf.contract.child.newInstanceBridge.methods.setOperatorThreshold(0, conf.bridges.length).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
+  await conf.contract.parent.newInstanceBridge.methods.setOperatorThreshold(0, conf.bridges.length).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
 
   // transferOwnership
-  await conf.child.newInstanceBridge.methods.transferOwnership(conf.child.operator).send({ from: conf.child.sender, gas: 100000000, value: 0 });
-  await conf.parent.newInstanceBridge.methods.transferOwnership(conf.parent.operator).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
+  await conf.contract.child.newInstanceBridge.methods.transferOwnership(conf.bridges[0].child.operator).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
+  await conf.contract.parent.newInstanceBridge.methods.transferOwnership(conf.bridges[0].parent.operator).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
 
   const filename  = "transfer_conf.json"
   fs.writeFile(filename, JSON.stringify(conf), (err) => {
@@ -78,17 +92,6 @@ async function deploy(info, bridgeIdentity) {
           console.log("Error:", err);
       }
   })
-  
-  const url = conf.child.url;
-  log = 'registering bridges to the child node'
-  await jsonRpcReq(url, log, 'subbridge_registerBridge', [conf.child.bridge, conf.parent.bridge]);
 
-  log = 'subscribing bridges to the child node'
-  await jsonRpcReq(url, log, 'subbridge_subscribeBridge', [conf.child.bridge, conf.parent.bridge]);
-
-/*
-  console.log(`subbridge.registerBridge("${conf.child.bridge}", "${conf.parent.bridge}")`)
-  console.log(`subbridge.subscribeBridge("${conf.child.bridge}", "${conf.parent.bridge}")`)
-*/
   console.log(`------------------------- ${testcase} END -------------------------`)
 })();
