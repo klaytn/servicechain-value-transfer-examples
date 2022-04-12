@@ -1,9 +1,23 @@
 # Requirement
-1. `bridge_info.json` should be properly set before running tests. See [configuration example](https://docs.klaytn.com/node/service-chain/getting-started/value-transfer)
+1. `bridge_info.json` should be properly set before running tests. For details, see [Configuration](#configuration).
 2. Set `RPC_API="klay,subbridge"` in your `kscnd.conf`
 
 # Install dependencies
 `$ npm install`
+
+# Configuration
+Before running these examples, you should properly configure `common/bridge_info.json`.
+It has the following fields:
+- `sender.child.key` and `sender.parent.key`: The value transfer example requires an account in the parent and the child
+in order to send transactions. The `key` fields hold the hex private key value for those accounts.
+- `bridges[].child.url` and `bridges[].parent.url`: There should be at least one bridge to be configured before testing
+value transfer. The `url` fields hold the URL address for the bridge configured nodes (parent and child).
+Note that the URL is used for the `subbridge` API. Since `subbridge` API can be used in the child node, we don't need
+all parents' URL. However, we still need at least one parent URL in order to instantiate Caver and send transactions
+to the parent chain. So please make sure the first element of the `bridges` list has the parent URL.
+- `bridges[].child.operator` and `bridges[].parent.operator`: The childOperator and parentOperator address.
+This address can be queried in the child node's javascript console by the `subbridge.parentOperator` and
+`subbridge.childOperator` commands.
 
 # How to run
 All the script files, ```*.sh``` sequantilly run contract deployment, one-step (`requestValueTransfer()`), and two-step (`approve()` and `requestXXXTransfer()`) transfers.
