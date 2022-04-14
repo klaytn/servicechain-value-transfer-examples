@@ -27,11 +27,11 @@ async function getFreshToken() {
 (async function TokenTransfer() {
   const testcase = process.argv[1].substring(process.argv[1].lastIndexOf('/') + 1).replace(/\.[^/.]+$/, "");
   console.log(`------------------------- ${testcase} START -------------------------`)
-  const scnCaver = new Caver(conf.bridges[0].child.url);
+  const scnCaver = new Caver(conf.url.children[0]);
   const scnInstance = new scnCaver.klay.Contract(nftAbi, conf.contract.child.token);
   const scnInstanceBridge = new scnCaver.klay.Contract(bridgeAbi, conf.contract.child.bridge);
 
-  const enCaver = new Caver(conf.bridges[0].parent.url);
+  const enCaver = new Caver(conf.url.parent);
   const enInstance = new enCaver.klay.Contract(nftAbi, conf.contract.parent.token);
   const enInstanceBridge = new enCaver.klay.Contract(bridgeAbi, conf.contract.parent.bridge);
 
