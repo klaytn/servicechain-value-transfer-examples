@@ -89,6 +89,10 @@ async function deploy(url, sender, info, bridgeIdentity) {
 
     log = 'subscribing bridges to the child node'
     await jsonRpcReq(url, log, 'subbridge_subscribeBridge', [conf.contract.child.bridge, conf.contract.parent.bridge]);
+    /* Above 2 APIs can also be called via Klaytn Javascript Console.
+     * > subbridge.registerBridge("0xCHILD_BRIDGE_ADDRESS", "0xPARENT_BRIDGE_ADDRESS")
+     * > subbridge.subscribeBridge("0xCHILD_BRIDGE_ADDRESS", "0xPARENT_BRIDGE_ADDRESS")
+     */
   }
 
   // set operator threshold
