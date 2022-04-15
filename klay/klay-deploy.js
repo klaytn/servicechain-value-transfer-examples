@@ -92,6 +92,10 @@ async function deploy(url, sender, info, bridgeIdentity) {
   }
 
   // set operator threshold
+  // In this example, we set operator threshold to the number of bridge operators,
+  // so all bridge must be operational in order for value transfer to succeed.
+  // This is intended to check if all bridges are working fine.
+  // In production, use an appropriate threshold to fit your needs.
   await conf.contract.child.newInstanceBridge.methods.setOperatorThreshold(0, conf.url.children.length).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
   await conf.contract.parent.newInstanceBridge.methods.setOperatorThreshold(0, conf.url.children.length).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
 
