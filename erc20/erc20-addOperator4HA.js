@@ -55,5 +55,11 @@ async function makeInstance(info) {
   await conf.child.newInstanceBridge.methods.registerOperator("your new child operator").send({ from: conf.child.sender, gas: 100000000, value: 0 });
   await conf.parent.newInstanceBridge.methods.registerOperator("your new parent operator").send({ from: conf.parent.sender, gas: 100000000, value: 0 });
 
+
+  // // set threshold
+  // await conf.child.newInstanceBridge.methods.setOperatorThreshold(0, "your threshold number").send({ from: conf.child.sender, gas: 100000000, value: 0 });
+  // await conf.parent.newInstanceBridge.methods.setOperatorThreshold(0, "your threshold number").send({ from: conf.parent.sender, gas: 100000000, value: 0 });
+
+
   console.log(`------------------------- ${testcase} END -------------------------`)
 })();
