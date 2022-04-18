@@ -23,6 +23,7 @@ async function jsonRpcReq(url, log, method, params) {
     }
   }).catch(err => {
     if (err != undefined) {
+      console.log("HERE22")
       console.log(err);
       process.exit(1);
     }
@@ -69,10 +70,6 @@ async function deploy(info) {
   // register token
   await conf.child.newInstanceBridge.methods.registerToken(conf.child.token, conf.parent.token).send({ from: conf.child.sender, gas: 100000000, value: 0 });
   await conf.parent.newInstanceBridge.methods.registerToken(conf.parent.token, conf.child.token).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
-
-  // transferOwnership
-  await conf.child.newInstanceBridge.methods.transferOwnership(conf.child.operator).send({ from: conf.child.sender, gas: 100000000, value: 0 });
-  await conf.parent.newInstanceBridge.methods.transferOwnership(conf.parent.operator).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
 
   const filename  = "transfer_conf.json"
   fs.writeFile(filename, JSON.stringify(conf), (err) => {
