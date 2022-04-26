@@ -1,0 +1,4 @@
+*.sw*
+.idea
+node_modules
+transfer_conf.json
