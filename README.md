@@ -1,5 +1,5 @@
 # Requirement
-1. `bridge_info.json` should be properly set before running tests. See [configuration example](https://docs.klaytn.com/node/service-chain/getting-started/value-transfer)
+`bridge_info.json` should be properly set before running tests. See [configuration example](https://docs.klaytn.com/node/service-chain/getting-started/value-transfer)
 
 # Install dependencies
 `$ npm install`
