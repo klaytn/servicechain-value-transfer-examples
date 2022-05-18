@@ -41,7 +41,7 @@ async function deploy(info) {
 
   // add minter
   await conf.child.newInstance.methods.addMinter(conf.child.bridge).send({ from: conf.child.sender, to: conf.child.bridge, gas: 100000000, value: 0 });
-  await conf.parent.newInstance.methods.addMinter(conf.parent.bridge).send({ from: conf.parent.sender, to: conf.child.bridge, gas: 100000000, value: 0 });
+  await conf.parent.newInstance.methods.addMinter(conf.parent.bridge).send({ from: conf.parent.sender, to: conf.parent.bridge, gas: 100000000, value: 0 });
 
   // register operator
   await conf.child.newInstanceBridge.methods.registerOperator(conf.child.operator).send({ from: conf.child.sender, gas: 100000000, value: 0 });
