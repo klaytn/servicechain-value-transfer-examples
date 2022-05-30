@@ -10,22 +10,22 @@ const bridgeCode = fs.readFileSync('../build/Bridge.bin', 'utf8');
 const tokenAbi = JSON.parse(fs.readFileSync('../build/ServiceChainToken.abi', 'utf8'));
 const tokenCode = fs.readFileSync('../build/ServiceChainToken.bin', 'utf8');
 
-async function deploy(info) {
-  const caver = new Caver(info.url);
-  info.sender = caver.klay.accounts.wallet.add(info.key).address;
+async function deploy(url, sender, info) {
+  const caver = new Caver(url);
+  sender.address = caver.klay.accounts.wallet.add(sender.key).address;
 
   try {
       // Deploy bridge
       const instanceBridge = new caver.klay.Contract(bridgeAbi);
       info.newInstanceBridge = await instanceBridge.deploy({data: bridgeCode, arguments:[true]})
-          .send({ from: info.sender, gas: 100000000, value: 0 });
+          .send({ from: sender.address, gas: 100000000, value: 0 });
       info.bridge = info.newInstanceBridge._address;
       console.log(`info.bridge: ${info.bridge}`);
 
       // Deploy ERC20 token
       const instance = new caver.klay.Contract(tokenAbi);
       info.newInstance = await instance.deploy({data: tokenCode, arguments:[info.newInstanceBridge._address]})
-          .send({ from: info.sender, gas: 100000002, value: 0 });
+          .send({ from: sender.address, gas: 100000002, value: 0 });
       info.token = info.newInstance._address;
       console.log(`info.token: ${info.token}`);
   } catch (e) {
@@ -36,24 +36,37 @@ async function deploy(info) {
 (async function TokenDeploy() {
   const testcase = process.argv[1].substring(process.argv[1].lastIndexOf('/') + 1).replace(/\.[^/.]+$/, "");
   console.log(`------------------------- ${testcase} START -------------------------`)
-  await deploy(conf.child);
-  await deploy(conf.parent);
+  await deploy(conf.url.child, conf.sender.child, conf.contract.child);
+  await deploy(conf.url.parent, conf.sender.parent, conf.contract.parent);
 
   // add minter
-  await conf.child.newInstance.methods.addMinter(conf.child.bridge).send({ from: conf.child.sender, to: conf.child.bridge, gas: 100000000, value: 0 });
-  await conf.parent.newInstance.methods.addMinter(conf.parent.bridge).send({ from: conf.parent.sender, to: conf.child.bridge, gas: 100000000, value: 0 });
-
-  // register operator
-  await conf.child.newInstanceBridge.methods.registerOperator(conf.child.operator).send({ from: conf.child.sender, gas: 100000000, value: 0 });
-  await conf.parent.newInstanceBridge.methods.registerOperator(conf.parent.operator).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
+  await conf.contract.child.newInstance.methods.addMinter(conf.contract.child.bridge).send({ from: conf.sender.child.address, to: conf.contract.child.bridge, gas: 100000000, value: 0 });
+  await conf.contract.parent.newInstance.methods.addMinter(conf.contract.parent.bridge).send({ from: conf.sender.parent.address, to: conf.contract.parent.bridge, gas: 100000000, value: 0 });
 
   // register token
-  await conf.child.newInstanceBridge.methods.registerToken(conf.child.token, conf.parent.token).send({ from: conf.child.sender, gas: 100000000, value: 0 });
-  await conf.parent.newInstanceBridge.methods.registerToken(conf.parent.token, conf.child.token).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
+  await conf.contract.child.newInstanceBridge.methods.registerToken(conf.contract.child.token, conf.contract.parent.token).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
+  await conf.contract.parent.newInstanceBridge.methods.registerToken(conf.contract.parent.token, conf.contract.child.token).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
+
+  for (const [i, bridge] of conf.bridges.entries()) {
+    // register operator
+    await conf.child.newInstanceBridge.methods.registerOperator(bridge.child.operator).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
+    await conf.parent.newInstanceBridge.methods.registerOperator(bridge.parent.operator).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
+
+    const alias = "MYBRIDGE2"
+    // Initialize service chain configuration with three logs via interaction with attached console
+    console.log(`Run below 3 commands in the Javascript console of the bridge[${i}]`);
+    console.log(`subbridge.registerBridgeByAlias("${alias}", "${conf.contract.child.bridge}", "${conf.contract.parent.bridge}")`)
+    console.log(`subbridge.subscribeBridgeByAlias("${alias}")`)
+    console.log(`subbridge.registerTokenByAlias("${alias}", "${conf.contract.child.token}", "${conf.contract.parent.token}")`)
+  }
+
+  // setOperatorThreshold
+  await conf.contract.child.newInstanceBridge.methods.setOperatorThreshold(conf.bridges.length).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
+  await conf.contract.parent.newInstanceBridge.methods.setOperatorThreshold(conf.bridges.length).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
 
   // transferOwnership
-  await conf.child.newInstanceBridge.methods.transferOwnership(conf.child.operator).send({ from: conf.child.sender, gas: 100000000, value: 0 });
-  await conf.parent.newInstanceBridge.methods.transferOwnership(conf.parent.operator).send({ from: conf.parent.sender, gas: 100000000, value: 0 });
+  await conf.contract.child.newInstanceBridge.methods.transferOwnership(conf.bridges[0].child.operator).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
+  await conf.contract.parent.newInstanceBridge.methods.transferOwnership(conf.bridges[0].parent.operator).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
 
   const filename  = "transfer_conf.json"
   fs.writeFile(filename, JSON.stringify(conf), (err) => {
@@ -61,10 +74,6 @@ async function deploy(info) {
           console.log("Error:", err);
       }
   })
-  
-  // Initialize service chain configuration with three logs via interaction with attached console
-  console.log(`subbridge.registerBridgeByAlias("${alias}", "${conf.child.bridge}", "${conf.parent.bridge}")`)
-  console.log(`subbridge.subscribeBridgeByAlias("${alias}")`)
-  console.log(`subbridge.registerTokenByAlias("${alias}", "${conf.child.token}", "${conf.parent.token}")`)
+
   console.log(`------------------------- ${testcase} END -------------------------`)
 })();
