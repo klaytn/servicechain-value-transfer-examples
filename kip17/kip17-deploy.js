@@ -48,18 +48,10 @@ async function deploy(url, sender, info) {
   await conf.contract.child.newInstanceBridge.methods.registerToken(conf.contract.child.token, conf.contract.parent.token).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
   await conf.contract.parent.newInstanceBridge.methods.registerToken(conf.contract.parent.token, conf.contract.child.token).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
 
-  for (const [i, bridge] of conf.bridges.entries()) {
+  for (const bridge of conf.bridges) {
     // register operator
     await conf.contract.child.newInstanceBridge.methods.registerOperator(bridge.child.operator).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
     await conf.contract.parent.newInstanceBridge.methods.registerOperator(bridge.parent.operator).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
-
-    // Initialize service chain configuration with three logs via interaction with attached console
-    console.log("############################################################################");
-    console.log(`Run below 3 commands in the Javascript console of the child bridge[${i}]`);
-    console.log(`subbridge.registerBridge("${conf.contract.child.bridge}", "${conf.contract.parent.bridge}")`)
-    console.log(`subbridge.subscribeBridge("${conf.contract.child.bridge}", "${conf.contract.parent.bridge}")`)
-    console.log(`subbridge.registerToken("${conf.contract.child.bridge}", "${conf.contract.parent.bridge}", "${conf.contract.child.token}", "${conf.contract.parent.token}")`)
-    console.log("############################################################################");
   }
 
   // setOperatorThreshold
@@ -76,6 +68,14 @@ async function deploy(url, sender, info) {
           console.log("Error:", err);
       }
   });
+
+  // Initialize service chain configuration with three logs via interaction with attached console
+  console.log("############################################################################");
+  console.log(`Run below 3 commands in the Javascript console of all child bridge nodes (${conf.bridges.length} nodes total)`);
+  console.log(`subbridge.registerBridge("${conf.contract.child.bridge}", "${conf.contract.parent.bridge}")`)
+  console.log(`subbridge.subscribeBridge("${conf.contract.child.bridge}", "${conf.contract.parent.bridge}")`)
+  console.log(`subbridge.registerToken("${conf.contract.child.bridge}", "${conf.contract.parent.bridge}", "${conf.contract.child.token}", "${conf.contract.parent.token}")`)
+  console.log("############################################################################");
 
   console.log(`------------------------- ${testcase} END -------------------------`)
 })();

@@ -47,17 +47,10 @@ async function deploy(url, sender, info) {
   await conf.contract.child.newInstanceBridge.methods.registerToken(conf.contract.child.token, conf.contract.parent.token).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
   await conf.contract.parent.newInstanceBridge.methods.registerToken(conf.contract.parent.token, conf.contract.child.token).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
 
-  for (const [i, bridge] of conf.bridges.entries()) {
+  for (const bridge of conf.bridges) {
     // register operator
     await conf.child.newInstanceBridge.methods.registerOperator(bridge.child.operator).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
     await conf.parent.newInstanceBridge.methods.registerOperator(bridge.parent.operator).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
-
-    const alias = "MYBRIDGE2"
-    // Initialize service chain configuration with three logs via interaction with attached console
-    console.log(`Run below 3 commands in the Javascript console of the bridge[${i}]`);
-    console.log(`subbridge.registerBridgeByAlias("${alias}", "${conf.contract.child.bridge}", "${conf.contract.parent.bridge}")`)
-    console.log(`subbridge.subscribeBridgeByAlias("${alias}")`)
-    console.log(`subbridge.registerTokenByAlias("${alias}", "${conf.contract.child.token}", "${conf.contract.parent.token}")`)
   }
 
   // setOperatorThreshold
@@ -74,6 +67,15 @@ async function deploy(url, sender, info) {
           console.log("Error:", err);
       }
   })
+
+  const alias = "MYBRIDGE2"
+  // Initialize service chain configuration with three logs via interaction with attached console
+  console.log("############################################################################");
+  console.log(`Run below 3 commands in the Javascript console of all child bridge nodes (${conf.bridges.length} nodes total)`);
+  console.log(`subbridge.registerBridgeByAlias("${alias}", "${conf.contract.child.bridge}", "${conf.contract.parent.bridge}")`)
+  console.log(`subbridge.subscribeBridgeByAlias("${alias}")`)
+  console.log(`subbridge.registerTokenByAlias("${alias}", "${conf.contract.child.token}", "${conf.contract.parent.token}")`)
+  console.log("############################################################################");
 
   console.log(`------------------------- ${testcase} END -------------------------`)
 })();
