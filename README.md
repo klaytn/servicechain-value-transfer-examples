@@ -71,4 +71,4 @@ Both KIP7 and KIP17 bridge contracts would be supported corresponding `kscn` bin
 
 ## Bridge Alias API
 The current SC implementation does not have built-in bridge management for convinent bridge access.
-Bridge alias is a new feature to be developed that allows to access specific bridge pair via alias access. The PoC example of alias API is in `erc20/alias-erc20-deploy.js`.
+Bridge alias is a new feature to be developed that allows to access specific bridge pair via alias access (to be released in v1.9.0). The PoC example of alias API is in `erc20/alias-erc20-deploy.js`.
