@@ -27,7 +27,7 @@ function sleep(ms) {
   const alice = "0xc40b6909eb7085590e1c26cb3becc25368e249e9";
 
   try {
-		watch(enInstanceBridge, scnInstanceBridge);
+    watch(enInstanceBridge, scnInstanceBridge);
     let balance = await scnInstance.methods.balanceOf(alice).call();
     console.log("alice balance:", balance);
 
@@ -47,14 +47,14 @@ function sleep(ms) {
 })()
 
 function watch(parentBridgeContract, childBridgeContract) {
-	const reqValueTransferSub = parentBridgeContract.subscribe('RequestValueTransfer', {}, 
-		(error, event) => {
+  const reqValueTransferSub = parentBridgeContract.subscribe('RequestValueTransfer', {}, 
+    (error, event) => {
       if (!error) printEvent(event)
-	});
+    });
   const handleValueTransferSub = childBridgeContract.subscribe('HandleValueTransfer', {}, 
-		(error, event) => {
+    (error, event) => {
       if (!error) printEvent(event)
-	});
+    });
 }
 
 function printEvent(event) {
