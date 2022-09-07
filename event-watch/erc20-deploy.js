@@ -16,21 +16,22 @@ async function deploy(url, sender, info) {
   sender.address = caver.klay.accounts.wallet.add(sender.key).address;
 
   try {
-      // Deploy bridge
-      const instanceBridge = new caver.klay.Contract(bridgeAbi);
-      info.newInstanceBridge = await instanceBridge.deploy({data: bridgeCode, arguments:[true]})
-          .send({ from: sender.address, gas: 100000000, value: 0 });
-      info.bridge = info.newInstanceBridge._address;
-      console.log(`info.bridge: ${info.bridge}`);
+    // Deploy bridge
+    const instanceBridge = new caver.klay.Contract(bridgeAbi);
+    info.newInstanceBridge = await instanceBridge.deploy({data: bridgeCode, arguments:[true]})
+      .send({ from: sender.address, gas: 100000000, value: 0 });
+    info.bridge = info.newInstanceBridge._address;
+    console.log(`info.bridge: ${info.bridge}`);
 
-      // Deploy ERC20 token
-      const instance = new caver.klay.Contract(tokenAbi);
-      info.newInstance = await instance.deploy({data: tokenCode, arguments:[info.newInstanceBridge._address]})
-          .send({ from: sender.address, gas: 100000000, value: 0 });
-      info.token = info.newInstance._address;
-      console.log(`info.token: ${info.token}`);
+    // Deploy ERC20 token
+    const instance = new caver.klay.Contract(tokenAbi);
+    info.newInstance = await instance.deploy({data: tokenCode, arguments:[info.newInstanceBridge._address]})
+      .send({ from: sender.address, gas: 100000000, value: 0 });
+    info.token = info.newInstance._address;
+    console.log(`info.token: ${info.token}`);
+    return caver;
   } catch (e) {
-      console.log("Error:", e);
+    console.log("Error:", e);
   }
 }
 
@@ -38,8 +39,8 @@ async function deploy(url, sender, info) {
   const testcase = process.argv[1].substring(process.argv[1].lastIndexOf('/') + 1).replace(/\.[^/.]+$/, "");
   console.log(`------------------------- ${testcase} START -------------------------`)
   conf.contract = {child: {}, parent:{}}
-  await deploy(conf.ws.child, conf.sender.child, conf.contract.child);
-  await deploy(conf.ws.parent, conf.sender.parent, conf.contract.parent);
+  const scnCaver = await deploy(conf.ws.child, conf.sender.child, conf.contract.child);
+  const enCaver = await deploy(conf.ws.parent, conf.sender.parent, conf.contract.parent);
 
   // add minter
   await conf.contract.child.newInstance.methods.addMinter(conf.contract.child.bridge).send({ from: conf.sender.child.address, to: conf.contract.child.bridge, gas: 100000000, value: 0 });
@@ -63,6 +64,9 @@ async function deploy(url, sender, info) {
   await conf.contract.child.newInstanceBridge.methods.transferOwnership(conf.bridges[0].child.operator).send({ from: conf.sender.child.address, gas: 100000000, value: 0 });
   await conf.contract.parent.newInstanceBridge.methods.transferOwnership(conf.bridges[0].parent.operator).send({ from: conf.sender.parent.address, gas: 100000000, value: 0 });
 
+  scnCaver.currentProvider.disconnect();
+  enCaver.currentProvider.disconnect();
+
   conf.contract.child.newInstance.currentProvider = undefined;
   conf.contract.child.newInstanceBridge.currentProvider = undefined;
   conf.contract.parent.newInstance.currentProvider = undefined;
@@ -70,9 +74,9 @@ async function deploy(url, sender, info) {
 
   const filename  = "transfer_conf.json"
   fs.writeFile(filename, JSON.stringify(conf), (err) => {
-      if (err) {
-          console.log("Error:", err);
-      }
+    if (err) {
+      console.log("Error:", err);
+    }
   })
 
   // Initialize service chain configuration with three logs via interaction with attached console
@@ -82,6 +86,5 @@ async function deploy(url, sender, info) {
   console.log(`subbridge.subscribeBridge("${conf.contract.child.bridge}", "${conf.contract.parent.bridge}")`)
   console.log(`subbridge.registerToken("${conf.contract.child.bridge}", "${conf.contract.parent.bridge}", "${conf.contract.child.token}", "${conf.contract.parent.token}")`)
   console.log("############################################################################");
-
   console.log(`------------------------- ${testcase} END -------------------------`)
 })();

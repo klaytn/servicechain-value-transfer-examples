@@ -27,7 +27,8 @@ function sleep(ms) {
   const alice = "0xc40b6909eb7085590e1c26cb3becc25368e249e9";
 
   try {
-    watch(enInstanceBridge, scnInstanceBridge);
+    let {reqValueTransferSub, handleValueTransferSub} = watch(enInstanceBridge, scnInstanceBridge);
+
     let balance = await scnInstance.methods.balanceOf(alice).call();
     console.log("alice balance:", balance);
 
@@ -40,6 +41,11 @@ function sleep(ms) {
     // Check alice balance in Service Chain
     balance = await scnInstance.methods.balanceOf(alice).call();
     console.log("alice balance:", balance);
+
+    reqValueTransferSub.unsubscribe();
+    handleValueTransferSub.unsubscribe();
+    scnCaver.currentProvider.disconnect();
+    enCaver.currentProvider.disconnect();
   } catch (e) {
     console.log("Error:", e);
   }
@@ -55,6 +61,7 @@ function watch(parentBridgeContract, childBridgeContract) {
     (error, event) => {
       if (!error) printEvent(event)
     });
+  return {reqValueTransferSub, handleValueTransferSub};
 }
 
 function printEvent(event) {
