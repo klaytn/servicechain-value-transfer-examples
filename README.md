@@ -1,3 +1,8 @@
+# Branch name will be changed
+
+We will change the `master` branch to `main` at Nov 1, 2022.
+After change branch policy, please check your local or forked repository settings.
+
 # Requirement
 `bridge_info.json` should be properly set before running tests. See [configuration example](https://docs.klaytn.com/node/service-chain/getting-started/value-transfer)
 
